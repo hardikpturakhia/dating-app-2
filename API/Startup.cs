@@ -1,7 +1,6 @@
-using API.Data;
+using API.Extentions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +11,7 @@ namespace API
     public class Startup
     {
         private readonly IConfiguration _config;
+        private string install = "Microsoft.aspnetcore.authentication.jwtbearer @3.1.7";
         public Startup(IConfiguration config)
         {
             _config = config;
@@ -21,12 +21,7 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(options =>
-            {
-                options.UseSqlite(
-                    _config.GetConnectionString("Default")
-                );
-            });
+            services.AddApplicationServices(_config);
 
             services.AddControllers();
 
@@ -34,6 +29,8 @@ namespace API
             {
                 options.AddDefaultPolicy(policy=> policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
             });
+            services.AddIdentityServices(_config);
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
@@ -56,6 +53,8 @@ namespace API
 
             app.UseCors();
             
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
