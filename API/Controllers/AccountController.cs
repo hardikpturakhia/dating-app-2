@@ -31,7 +31,7 @@ namespace API.Controllers
                 PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password)),
                 PasswordSalt = hmac.Key
             };
-            _context.AppUsers.Add(user);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return new UserDto{
                 Username = user.UserName,
@@ -41,13 +41,13 @@ namespace API.Controllers
 
         private async Task<bool> UserExists(string userName)
         {
-            return await _context.AppUsers.AnyAsync(x => x.UserName.ToLower() == userName.ToLower());
+            return await _context.Users.AnyAsync(x => x.UserName.ToLower() == userName.ToLower());
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto login)
         {
-            var user = await _context.AppUsers
+            var user = await _context.Users
             .SingleOrDefaultAsync(x => x.UserName.ToLower() == login.UserName.ToLower());
             if (user == null) return Unauthorized("Invalid Username");
             using var hmac = new HMACSHA512(user.PasswordSalt);
