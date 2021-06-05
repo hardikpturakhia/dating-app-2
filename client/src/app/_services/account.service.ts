@@ -18,14 +18,14 @@ export class AccountService {
       map((response: User) => {
         const user: User = response;
         if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
-          this.currentUserSource.next(user);
+          this.setCurrentUser(user);
         }
       }) 
     );
   }
   setCurrentUser(user: User) {
-      this.currentUserSource.next(user);
+    localStorage.setItem('user', JSON.stringify(user));  
+    this.currentUserSource.next(user);
   }
 
   logout() {
@@ -34,12 +34,13 @@ export class AccountService {
     this.currentUser$ = this.currentUserSource.asObservable();
   }
 
+
+
   registerUser(model: any) {
     return this.http.post<User>(this.baseUrl + 'account/register', model).pipe(
       map((user: User) => {
         if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
-          this.currentUserSource.next(user);
+          this.setCurrentUser(user);
         }
       })
     );
