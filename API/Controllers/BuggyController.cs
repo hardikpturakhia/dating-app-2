@@ -19,27 +19,27 @@ namespace API.Controllers
             return "secret text";
         }
 
-         [HttpGet("not-found")]
+        [HttpGet("not-found")]
         public ActionResult<string> GetNotFound()
         {
             var thing = _context.Users.Find(-1);
-            if (thing== null)
+            if (thing == null)
             {
                 return NotFound();
             }
             return Ok(thing);
         }
-         [HttpGet("server-error")]
+        [HttpGet("server-error")]
         public ActionResult<string> GetServerError()
         {
             var thing = _context.Users.Find(-1);
             var thingToReturn = thing.ToString();
             return thingToReturn;
         }
-         [HttpGet("bad-request")]
+        [HttpGet("bad-request")]
         public ActionResult<string> GetBadRequest()
         {
-            return BadRequest("This is bad request");
+            return BadRequest();
         }
     }
 }
