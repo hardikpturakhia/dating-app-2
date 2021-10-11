@@ -8,20 +8,20 @@ import { BsDatepickerConfig } from 'ngx-bootstrap/datepicker';
   styleUrls: ['./date-input.component.css']
 })
 export class DateInputComponent implements ControlValueAccessor {
-  @Input() label?:string;
+  @Input() label?: string;
   @Input() maxDate?: Date;
   bsConfig: Partial<BsDatepickerConfig>;
-  constructor(@Self() public ngControl: NgControl) { 
+  constructor(@Self() public ngControl: NgControl) {
     this.ngControl.valueAccessor = this;
     this.bsConfig = {
       containerClass: 'theme-red',
       dateInputFormat: 'DD MMM YYYY'
     };
     console.log(this.bsConfig.maxDate);
-    
+
   }
-  writeValue(obj: any): void {}
-  registerOnChange(fn: any): void {}
-  registerOnTouched(fn: any): void {}
+  writeValue(obj: any): void { }
+  registerOnChange(fn: any): void { }
+  registerOnTouched(fn: any): void { }
 
 }
