@@ -20,13 +20,16 @@ export class AccountService {
         if (user) {
           this.setCurrentUser(user);
         }
-      }) 
+      })
     );
   }
   setCurrentUser(user: User) {
-    if(user.token){
-    localStorage.setItem('user', JSON.stringify(user));  
-    this.currentUserSource.next(user);
+    user.roles = [];
+    const roles = this.getDecodeToken(user.token).role;
+    Array.isArray(roles) ? user.roles = roles : user.roles.push(roles);
+    if (user.token) {
+      localStorage.setItem('user', JSON.stringify(user));
+      this.currentUserSource.next(user);
     }
   }
 
@@ -47,5 +50,9 @@ export class AccountService {
         }
       })
     );
+  }
+
+  getDecodeToken(token: string) {
+    return JSON.parse(atob(token.split('.')[1]));
   }
 }
