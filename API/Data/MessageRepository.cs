@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
+using API.Extentions;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
@@ -61,29 +63,51 @@ namespace API.Data
         public async Task<IEnumerable<MessageDTO>> GetMessageThread(string currentUsername, string recipientUsername)
         {
             var messages = await _context.Messages
-            .Include(u => u.Sender).ThenInclude(p => p.Photos)
-            .Include(u => u.Recipient).ThenInclude(p => p.Photos)
                 .Where(m =>
-                    (m.RecipientUsername.ToLower() == currentUsername.ToLower()
-                        && m.SenderUsername.ToLower() == recipientUsername.ToLower() && !m.RecipientDeleted)
-                 || (m.RecipientUsername.ToLower() == recipientUsername.ToLower()
-                        && m.SenderUsername.ToLower() == currentUsername.ToLower() && !m.SenderDeleted)
-                ).OrderBy(m => m.MessageSent)
+                    m.Recipient.UserName == currentUsername && m.RecipientDeleted ==false
+                    && m.Sender.UserName == recipientUsername
+                    || m.Recipient.UserName ==recipientUsername
+                    && m.Sender.UserName == currentUsername && m.SenderDeleted == false
+                )
+                .MarkUnreadAsRead(currentUsername)
+                .OrderBy(m => m.MessageSent)
+                .ProjectTo<MessageDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
-            var unreadMessages = messages.Where(u => u.MessageRead == null && u.RecipientUsername == currentUsername).ToList();
-            if (unreadMessages.Any())
-            {
-                foreach (var message in unreadMessages)
-                {
-                    message.MessageRead = System.DateTime.Now;
-                }
-                await _context.SaveChangesAsync();
-            }
-            return _mapper.Map<IEnumerable<MessageDTO>>(messages);
+            return messages;
         }
         public async Task<bool> SaveAllAsync()
         {
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public void AddGroup(Group group)
+        {
+            _context.Groups.Add(group);
+        }
+
+        public async Task<Connection> GetConnection(string connectionId)
+        {
+            return await _context.Connections.FindAsync(connectionId);
+        }
+
+        public async Task<Group> GetMessageGroup(string groupName)
+        {
+            return await _context.Groups
+            .Include(c => c.Connections)
+            .FirstOrDefaultAsync(x => x.Name == groupName);
+        }
+
+        public void RemoveConnection(Connection connection)
+        {
+            _context.Connections.Remove(connection);
+        }
+
+        public async Task<Group> GetGroupForConnection(string connectionId)
+        {
+            return await _context.Groups
+            .Include(c => c.Connections)
+            .Where(c => c.Connections.Any(x => x.ConnectionId == connectionId))
+            .FirstOrDefaultAsync();
         }
     }
 }
