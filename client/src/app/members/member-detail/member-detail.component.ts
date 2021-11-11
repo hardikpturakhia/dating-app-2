@@ -52,8 +52,6 @@ export class MemberDetailComponent implements OnInit,OnDestroy {
       this.member = data.member;
     });
     this.route.queryParams.subscribe(params => {
-      console.log(params);
-
       params.tab ? this.selectTab(params.tab) : this.selectTab(0);
     });
 

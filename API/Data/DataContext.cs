@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Extentions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,7 @@ namespace API.Data
                 .HasOne(u=>u.Sender)
                 .WithMany(m=>m.MessageSent)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.ApplyUtcDateTimeConverter();
         }
     }
 }

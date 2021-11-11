@@ -46,18 +46,17 @@ namespace API.Data
         {
             var query = _context.Messages
             .OrderByDescending(m => m.MessageSent)
+            .ProjectTo<MessageDTO>(_mapper.ConfigurationProvider)
             .AsQueryable();
             query = messageParams.Container switch
             {
-                "Inbox" => query.Where(u => u.Recipient.UserName == messageParams.Username && !u.RecipientDeleted),
-                "Outbox" => query.Where(u => u.Sender.UserName == messageParams.Username && !u.SenderDeleted),
-                _ => query.Where(u => (u.Recipient.UserName == messageParams.Username && u.MessageRead == null
+                "Inbox" => query.Where(u => u.RecipientUsername == messageParams.Username && !u.RecipientDeleted),
+                "Outbox" => query.Where(u => u.SenderUsername == messageParams.Username && !u.SenderDeleted),
+                _ => query.Where(u => (u.RecipientUsername == messageParams.Username && u.MessageRead == null
                 && !u.RecipientDeleted
                 ))
             };
-
-            var messages = query.ProjectTo<MessageDTO>(_mapper.ConfigurationProvider);
-            return await PagedList<MessageDTO>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
+            return await PagedList<MessageDTO>.CreateAsync(query, messageParams.PageNumber, messageParams.PageSize);
         }
 
         public async Task<IEnumerable<MessageDTO>> GetMessageThread(string currentUsername, string recipientUsername)
@@ -75,10 +74,7 @@ namespace API.Data
                 .ToListAsync();
             return messages;
         }
-        public async Task<bool> SaveAllAsync()
-        {
-            return await _context.SaveChangesAsync() > 0;
-        }
+     
 
         public void AddGroup(Group group)
         {
